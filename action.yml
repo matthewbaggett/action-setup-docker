@@ -1,5 +1,5 @@
 name: "Setup Docker Builder"
-description: "Sets up a Docker multi-platform builder with GitHub Actions, including logging into the GitHub Container Registry and Docker Hub."
+description: "Sets up a Docker multi-platform builder with GitHub Actions, including logging into GHCR and Docker Hub."
 branding:
   color: "orange"
   icon: "arrow-up-circle"
