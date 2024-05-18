@@ -1,0 +1,22 @@
+name: Test
+
+permissions: read-all
+
+on:
+  push:
+
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.
+        with:
+          ghcr_user: matthewbaggett
+          ghcr_token: ${{ secrets.GITHUB_TOKEN }}
+          docker_hub_user: matthewbaggett
+          docker_hub_token: ${{ secrets.DOCKER_HUB_TOKEN }}
