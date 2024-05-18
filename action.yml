@@ -18,6 +18,14 @@ inputs:
     description: "The Docker Hub token"
     required: false
 
+outputs:
+  cache_from:
+    description: "The cache_from value for docker/build-push-action"
+    value: ${{ steps.helpers.outputs.cache_from }}
+  cache_to:
+    description: "The cache_to value for docker/build-push-action"
+    value: ${{ steps.helpers.outputs.cache_to }}
+
 runs:
   using: "composite"
   steps:
@@ -35,3 +43,17 @@ runs:
       with:
         username: ${{ inputs.docker_hub_user }}
         password: ${{ inputs.docker_hub_token }}
+    - id: helpers
+      shell: bash
+      run: |
+        if [[ "${{ github.actor }}" == "nektos/act" ]]; then
+          echo "cache_from=" >> $GITHUB_OUTPUT
+          echo "DOCKER_CACHE_FROM=" >> $GITHUB_ENV
+          echo "cache_to=" >> $GITHUB_OUTPUT
+          echo "DOCKER_CACHE_TO=" >> $GITHUB_ENV
+        else
+          echo "cache_from=type=gha" >> $GITHUB_OUTPUT
+          echo "DOCKER_CACHE_FROM=type=gha" >> $GITHUB_ENV
+          echo "cache_to=type=gha,mode=max" >> $GITHUB_OUTPUT
+          echo "DOCKER_CACHE_TO=type=gha,mode=max" >> $GITHUB_ENV
+        fi
