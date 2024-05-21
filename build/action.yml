@@ -52,7 +52,7 @@ runs:
       shell: bash
       run: |
         # If the inputs.maintainer is not set, use the repository owner
-        if [[ ! ${{ inputs.maintainer }}  ]]; then
+        if [[ -z "${{ inputs.maintainer }}" ]]; then
           echo "maintainer=${{ github.repository_owner }} <${{ github.repository_owner }}@users.noreply.github.com>" >> $GITHUB_OUTPUT
         else 
           echo "maintainer=${{ inputs.maintainer }}" >> $GITHUB_OUTPUT
