@@ -61,6 +61,7 @@ runs:
       id: meta
       uses: docker/metadata-action@v5
       with:
+        context: workflow
         images: ${{ inputs.image }}
         tags: ${{ inputs.tags }}
         labels: |
@@ -69,7 +70,7 @@ runs:
     - name: Build
       uses: docker/build-push-action@v5
       with:
-        context: ${{ inputs.context }}
+        context: ./${{ inputs.context }}
         file: ${{ inputs.dockerfile }}
         target: ${{ inputs.target }}
         platforms: ${{ steps.precalc-vars.outputs.platforms }}
