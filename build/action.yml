@@ -1,0 +1,84 @@
+name: "Build & Push Docker Image"
+description: "Builds and pushes a Docker image with metadata and Dive report."
+branding:
+  color: "orange"
+  icon: "arrow-up-circle"
+
+inputs:
+  context:
+    description: "The context for the Docker build"
+    required: false
+    default: "."
+  dockerfile:
+    description: "The Dockerfile to use for the build"
+    required: false
+    default: "Dockerfile"
+  target:
+    description: "The target for the Docker build"
+    required: false
+  image:
+    description: "The image for the Docker build"
+    required: true
+  tags:
+    description: "The tags for the Docker build"
+    required: false
+    default: |
+      type=raw,latest
+  labels:
+    description: "The labels for the Docker build"
+    required: false
+  maintainer:
+    description: "The maintainer for the Docker build"
+    required: false
+
+  push:
+    description: "Whether to push the image"
+    required: false
+    default: "true"
+  pull:
+    description: "Whether to pull the image"
+    required: false
+    default: "true"
+
+  fail-on-dive-report:
+    description: "Whether to fail the build on a Dive report failure"
+    required: false
+    default: "false"
+
+runs:
+  using: "composite"
+  steps:
+    - id: precalc-vars
+      shell: bash
+      run: |
+        # If the inputs.maintainer is not set, use the repository owner
+        if [[ ! ${{ inputs.maintainer }}  ]]; then
+          echo "maintainer=${{ github.repository_owner }} <${{ github.repository_owner }}@users.noreply.github.com>" >> $GITHUB_OUTPUT
+        else 
+          echo "maintainer=${{ inputs.maintainer }}" >> $GITHUB_OUTPUT
+        fi
+    - name: Generate Docker Metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ inputs.image }}
+        tags: ${{ inputs.tags }}
+        labels: |
+          ${{ inputs.labels }}
+          maintainer=${{ steps.precalc-vars.outputs.maintainer }}
+    - name: Build
+      uses: docker/build-push-action@v5
+      with:
+        context: ${{ inputs.context }}
+        file: ${{ inputs.dockerfile }}
+        target: ${{ inputs.target }}
+        platforms: ${{ steps.precalc-vars.outputs.platforms }}
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        push: ${{ inputs.push }}
+        pull: ${{ inputs.pull }}
+    - name: Dive Report
+      continue-on-error: ${{ inputs.fail-on-dive-report }}
+      uses: MartinHeinz/dive-action@v0.1.3
+      with:
+        image: ${{ steps.meta.outputs.image }}
